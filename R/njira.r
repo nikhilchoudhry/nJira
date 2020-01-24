@@ -302,7 +302,7 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 #' The function returns the query data from Jira as a dataframe.
 #'
 #' For querying the JIRA 'history' table, the where clause must specify the issue 'id' \cr
-#' Example : \code{where = "id = 'HIVE-2715'"}
+#' Example : \code{where = "id = 'HIVE-22692'"}
 #'
 #' @param table Name of Jira Tables from which data is fetched.
 #' @param fields Comma separated names of the fields from the specified table whose values are fetched.
@@ -319,10 +319,10 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 #' AND Created > '2017-01-01'")
 #'
 #' Fetch Issue History from JIRA 'history' table
-#' issueHistory <- jira.query(table = "history", where = "id = 'HIVE-4567'")
+#' issueHistory <- jira.query(table = "history", where = "id = 'HIVE-22692'")
 #'
 #' issueHistory <- jira.query(table = "history", fields = "id AS IssueId,
-#' toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-4567'
+#' toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692'
 #' AND field = 'status'", groupby = "id,toString")
 
 jira.query <- function(table, fields = NULL, where = NULL, groupby = NULL) {
