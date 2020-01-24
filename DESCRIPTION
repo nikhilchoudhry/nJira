@@ -1,0 +1,13 @@
+Package: nJira
+Type: Package
+Title: SQL like query interface for JIRA in R language
+Version: 1.0.0
+Authors@R: person("Nikhil", "Choudhry", email = "nikhil.choudhry@gmail.com", role = c("aut", "cre"))
+Description: This package provides a SQL query like interface to fetch data from JIRA into R dataframe (using JIRA REST API)
+License: Public
+LazyData: TRUE
+NeedsCompilation: no
+RoxygenNote: 6.0.1
+Author: Nikhil Choudhry [aut, cre]
+Maintainer: Nikhil Choudhry <nikhil.choudhry@gmail.com>
+URL:
