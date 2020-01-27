@@ -310,20 +310,13 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 #' @param groupby specifies the list of fields on which the data is grouped.
 #' @return The function returns the Jira query result as a dataframe.
 #' @examples
+#' issues <- jira.query(table = "issues", fields = "id, Created, Status, Priority AS IssuePriority", where = "project = 'HIVE' AND created >= '2016-01-01' AND created <= '2019-01-01' AND Status IN ('Open', 'Closed', 'Resolved')")
 #'
-#' Fetch Issues from JIRA 'issues' table
-#' issuesData <- jira.query(table = "issues", fields = "id, Created, Status, Priority AS IssuePriority",
-#' where = "project = 'HIVE' AND created >= '2016-01-01'AND created <= '2019-01-01' AND Status in ('Open', 'Closed', 'Resolved'))
+#' issues <- jira.query(table = "issues", fields = "id AS IssueId, Created", where = "'cf[10021]' = 'ABCD' AND Created > '2017-01-01'")
 #'
-#' jiraData <- jira.query(table = "issues", fields = "id AS IssueId, Created", where = "'cf[10021]' = 'ABCD'
-#' AND Created > '2017-01-01'")
+#' history <- jira.query(table = "history", where = "id = 'HIVE-22692'")
 #'
-#' Fetch Issue History from JIRA 'history' table
-#' issueHistory <- jira.query(table = "history", where = "id = 'HIVE-22692'")
-#'
-#' issueHistory <- jira.query(table = "history", fields = "id AS IssueId,
-#' toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692'
-#' AND field = 'status'", groupby = "id,toString")
+#' history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", groupby = "id,toString")
 
 jira.query <- function(table, fields = NULL, where = NULL, groupby = NULL) {
   if (!exists(".jiraEnv")) {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}

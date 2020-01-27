@@ -20,4 +20,31 @@ To get the current development version from github:
 devtools::install_github("nikhilchoudhry/nJira")
 ```
 
+## Getting Started
+You should have an account in the JIRA instance to query its data. You can use the same log-in credentials that you use on your JIRA website.
+
+Assuming your JIRA credentials are as follows
+
+  * JIRA Environment (web link): https://issues.apache.org/jira
+  * JIRA Username: testUser
+  * JIRA Password: testPassword
+
+### Authenticate in JIRA using the following command:
+```{r}
+jira.login(jira.env = "https://issues.apache.org/jira", jira.user = "testUser", jira.pwd = "testPassword")
+```
+### Fetch the Metadata of JIRA using the following command:
+```{r}
+jiraMetadata <- jira.metadata()
+```
+
+### Query JIRA tables and fields (lookup via metadata) using the following command:
+```{r}
+issues <- jira.query(table = "issues", fields = "id, Created, Status, Priority AS IssuePriority", where = "project = 'HIVE' AND created >= '2016-01-01'AND created <= '2019-01-01' AND Status IN ('Open', 'Closed', 'Resolved')")
+
+history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", groupby = "id,toString")
+```
+
+
+
 ## Code of Conduct
