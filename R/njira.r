@@ -115,7 +115,7 @@
 
 # Internal nJira function takes an issue Id as an argument and returns its complete changelog/history in a dataframe.
 .jira.issue.changelog <- function(id) {
-  .logTrace(paste("jira: Fetching changelog of Issue -", id))
+  .logTrace(paste("jira: Fetching changelog of Issue -", id), pr = F)
   .logTrace(paste("jira: Running Changelog Query: ", .jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), pr = F)
   resp <- GET(paste(.jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), add_headers("Content-Type" = "application/json"))
   df <- .jira.changelogdf(resp)
@@ -146,7 +146,7 @@
 
 # Internal nJira function takes an issue Id as an argument and returns its complete comments in a dataframe.
 .jira.issue.comments <- function(id) {
-  .logTrace(paste("jira: Fetching comments of Issue -", id))
+  .logTrace(paste("jira: Fetching comments of Issue -", id), pr = F)
   .logTrace(paste("jira: Running comments Query: ", .jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), pr = F)
   resp <- GET(paste(.jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), add_headers("Content-Type" = "application/json"))
   df <- .jira.commentsdf(resp)
