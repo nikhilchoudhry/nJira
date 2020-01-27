@@ -1,5 +1,3 @@
-
-
 # function for timestamping
 .tStamp <- function() {
   return(format(Sys.time(), "%d-%m-%y %H:%M:%S"))
