@@ -4,8 +4,13 @@
 \alias{jira.login}
 \title{Jira Login Function}
 \usage{
-jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
-  jira.val = 0, logs = F)
+jira.login(
+  jira.env = NULL,
+  jira.user = NULL,
+  jira.pwd = NULL,
+  jira.val = 0,
+  logs = F
+)
 }
 \arguments{
 \item{jira.env}{Web address of JIRA environment (e.g. https://issues.apache.org/jira)}

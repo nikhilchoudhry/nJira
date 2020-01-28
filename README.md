@@ -26,12 +26,12 @@ You should have an account in the JIRA instance to query its data. You can use t
 Assuming your JIRA credentials are as follows
 
   * JIRA Environment (web link): https://issues.apache.org/jira
-  * JIRA Username: testUser
-  * JIRA Password: testPassword
+  * JIRA Username: jiraTestUser
+  * JIRA Password: jiraTestPwd
 
 ### Authenticate in JIRA using the following command:
 ```{r}
-jira.login(jira.env = "https://issues.apache.org/jira", jira.user = "testUser", jira.pwd = "testPassword")
+jira.login(jira.env = "https://issues.apache.org/jira", jira.user = "jiraTestUser", jira.pwd = "jiraTestPwd")
 ```
 ### Fetch the Metadata of JIRA using the following command:
 ```{r}
