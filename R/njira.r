@@ -9,6 +9,7 @@ pkg.globals$.jiraUser <- ""
 pkg.globals$.jiraPwd <- ""
 pkg.globals$.jiraVal <- ""
 pkg.globals$.issueFields <- ""
+pkg.globals$.logs <- F
 
 #' Jira Login Function
 #'
@@ -23,13 +24,14 @@ pkg.globals$.issueFields <- ""
 #' jira.login(jira.env="https://issues.apache.org/jira", 
 #' jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
 
-jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0) {
+jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0, .logs = F) {
   
   options(warn = -1)
   pkg.globals$.jiraEnv <- jira.env
   pkg.globals$.jiraUser <- jira.user
   pkg.globals$.jiraPwd <- jira.pwd
   pkg.globals$.jiraVal <- jira.val
+  pkg.globals$.logs <- .logs
   
   # Return if blank value is passed in global variables
   if (pkg.globals$.jiraEnv == "") {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}
