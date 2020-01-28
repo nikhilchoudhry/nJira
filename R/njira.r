@@ -14,8 +14,8 @@ pkg.globals$.issueFields <- ""
 #'
 #' This function authenticates the user to fetch data from respective JIRA environment.
 #'
-#' @param jira.env Web address of JIRA environment where data will be queried.
-#' @param jira.user Jira User Name.
+#' @param jira.env Web address of JIRA environment (e.g. https://issues.apache.org/jira)
+#' @param jira.user Jira User Name
 #' @param jira.pwd Jira Password
 #' @param jira.val 0/1 how should the list values be returned in the query results.
 #' @return The function autheticates into JIRA environment..
@@ -75,9 +75,9 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 #' For querying the JIRA 'history' table, the where clause must specify the issue 'id' \cr
 #' Example : \code{where = "id = 'HIVE-22692'"}
 #'
-#' @param table Name of Jira Tables from which data is fetched.
-#' @param fields Comma separated names of the fields from the specified table whose values are fetched.
-#' @param where specifies the where clause of the query. You can pass your JIRA JQL as is in the where clause.
+#' @param table Name of Jira table from which data will be fetched.
+#' @param fields Comma separated names of the fields from the specified table whose values will be fetched.
+#' @param where specifies the where clause of the query. You can also pass your JIRA JQL as-is in the where clause.
 #' @param groupby specifies the list of fields on which the data is grouped.
 #' @return The function returns the Jira query result as a dataframe.
 #' @examples

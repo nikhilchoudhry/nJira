@@ -7,11 +7,11 @@
 jira.query(table, fields = NULL, where = NULL, groupby = NULL)
 }
 \arguments{
-\item{table}{Name of Jira Tables from which data is fetched.}
+\item{table}{Name of Jira table from which data will be fetched.}
 
-\item{fields}{Comma separated names of the fields from the specified table whose values are fetched.}
+\item{fields}{Comma separated names of the fields from the specified table whose values will be fetched.}
 
-\item{where}{specifies the where clause of the query. You can pass your JIRA JQL as is in the where clause.}
+\item{where}{specifies the where clause of the query. You can also pass your JIRA JQL as-is in the where clause.}
 
 \item{groupby}{specifies the list of fields on which the data is grouped.}
 }

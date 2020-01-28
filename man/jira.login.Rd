@@ -8,9 +8,9 @@ jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
   jira.val = 0)
 }
 \arguments{
-\item{jira.env}{Web address of JIRA environment where data will be queried.}
+\item{jira.env}{Web address of JIRA environment (e.g. https://issues.apache.org/jira)}
 
-\item{jira.user}{Jira User Name.}
+\item{jira.user}{Jira User Name}
 
 \item{jira.pwd}{Jira Password}
 
