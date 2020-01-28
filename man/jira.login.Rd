@@ -23,5 +23,6 @@ The function autheticates into JIRA environment..
 This function authenticates the user to fetch data from respective JIRA environment.
 }
 \examples{
-jira.login(jira.env="https://issues.apache.org/jira", jira.user="user", jira.pwd="pwd")
+jira.login(jira.env="https://issues.apache.org/jira", 
+jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
 }

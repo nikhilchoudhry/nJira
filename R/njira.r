@@ -20,7 +20,8 @@ pkg.globals$.issueFields <- ""
 #' @param jira.val 0/1 how should the list values be returned in the query results.
 #' @return The function autheticates into JIRA environment..
 #' @examples
-#' jira.login(jira.env="https://issues.apache.org/jira", jira.user="user", jira.pwd="pwd")
+#' jira.login(jira.env="https://issues.apache.org/jira", 
+#' jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
 
 jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0) {
   
