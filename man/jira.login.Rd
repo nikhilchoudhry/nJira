@@ -5,7 +5,7 @@
 \title{Jira Login Function}
 \usage{
 jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
-  jira.val = 0)
+  jira.val = 0, logs = F)
 }
 \arguments{
 \item{jira.env}{Web address of JIRA environment (e.g. https://issues.apache.org/jira)}
@@ -14,7 +14,9 @@ jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
 
 \item{jira.pwd}{Jira Password}
 
-\item{jira.val}{0/1 how should the list values be returned in the query results.}
+\item{jira.val}{0/1 how should the list values be returned in the query results}
+
+\item{logs}{set it to True or False based on loggin is required on not (Default = F)}
 }
 \value{
 The function autheticates into JIRA environment..

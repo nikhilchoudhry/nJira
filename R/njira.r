@@ -9,6 +9,7 @@ pkg.globals$.jiraUser <- ""
 pkg.globals$.jiraPwd <- ""
 pkg.globals$.jiraVal <- ""
 pkg.globals$.issueFields <- ""
+pkg.globals$.logs <- F
 
 #' Jira Login Function
 #'
@@ -17,19 +18,21 @@ pkg.globals$.issueFields <- ""
 #' @param jira.env Web address of JIRA environment (e.g. https://issues.apache.org/jira)
 #' @param jira.user Jira User Name
 #' @param jira.pwd Jira Password
-#' @param jira.val 0/1 how should the list values be returned in the query results.
+#' @param jira.val 0/1 how should the list values be returned in the query results
+#' @param logs set it to True or False based on loggin is required on not (Default = F)
 #' @return The function autheticates into JIRA environment..
 #' @examples
 #' jira.login(jira.env="https://issues.apache.org/jira", 
 #' jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
 
-jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0) {
+jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0, logs = F) {
   
   options(warn = -1)
   pkg.globals$.jiraEnv <- jira.env
   pkg.globals$.jiraUser <- jira.user
   pkg.globals$.jiraPwd <- jira.pwd
   pkg.globals$.jiraVal <- jira.val
+  pkg.globals$.logs <- logs
   
   # Return if blank value is passed in global variables
   if (pkg.globals$.jiraEnv == "") {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}

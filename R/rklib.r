@@ -6,6 +6,8 @@
 # function for logging
 .logTrace <- function(msg = NULL, pr = T, fl = NULL) {
 
+  if (!pkg.globals$.logs) {return()}
+  
   if (is.null(fl)) {
     fldr = paste(getwd(), "Logs", sep = "/")
     if (!dir.exists(fldr)) {dir.create(fldr, recursive = T)}
