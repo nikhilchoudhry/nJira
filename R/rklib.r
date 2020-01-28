@@ -6,20 +6,20 @@
 # function for logging
 .logTrace <- function(msg = NULL, pr = T, fl = NULL) {
 
-  if (!pkg.globals$.logs) {return()}
-  
-  if (is.null(fl)) {
-    fldr = paste(getwd(), "Logs", sep = "/")
-    if (!dir.exists(fldr)) {dir.create(fldr, recursive = T)}
-    fl = paste(fldr, "/nJira_log_", format(Sys.time(), "%d-%m-%y.txt"), sep = "")
-  }
-
-  if (!file.exists(fl)) {
-    file.create(fl)
-    write.table(paste(.tStamp(), ": This package provides a SQL query like interface to fetch data from JIRA (using JIRA REST API)"),fl, append = T, row.names = F, col.names = F, sep = "")
-  }
   if(pr) {print(paste(.tStamp(), ":", msg))}
-  write.table(paste(.tStamp(), ":", msg), fl, append = T, row.names = F, col.names = F, sep = "")
+  if (pkg.globals$.logs) {
+    if (is.null(fl)) {
+      fldr = paste(getwd(), "Logs", sep = "/")
+      if (!dir.exists(fldr)) {dir.create(fldr, recursive = T)}
+      fl = paste(fldr, "/nJira_log_", format(Sys.time(), "%d-%m-%y.txt"), sep = "")
+    }
+  
+    if (!file.exists(fl)) {
+      file.create(fl)
+      write.table(paste(.tStamp(), ": This package provides a SQL query like interface to fetch data from JIRA (using JIRA REST API)"),fl, append = T, row.names = F, col.names = F, sep = "")
+    }
+    write.table(paste(.tStamp(), ":", msg), fl, append = T, row.names = F, col.names = F, sep = "")
+  }
 }
 
 ##############################################################################
