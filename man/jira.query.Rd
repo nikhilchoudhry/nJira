@@ -26,11 +26,16 @@ For querying the JIRA 'history' table, the where clause must specify the issue '
 Example : \code{where = "id = 'HIVE-22692'"}
 }
 \examples{
-issues <- jira.query(table = "issues", fields = "id, Created, Status, Priority AS IssuePriority", where = "project = 'HIVE' AND created >= '2016-01-01' AND created <= '2019-01-01' AND Status IN ('Open', 'Closed', 'Resolved')")
+issues <- jira.query(table = "issues", fields = "id AS IssueId, Created, Status, Priority", 
+where = "project = 'HIVE' AND created >= '2019-01-01' AND created <= '2019-12-31' AND 
+Status IN ('Open', 'Closed', 'Resolved')")
 
-issues <- jira.query(table = "issues", fields = "id AS IssueId, Created", where = "'cf[10021]' = 'ABCD' AND Created > '2017-01-01'")
+issues <- jira.query(table = "issues", fields = "id AS IssueId, Created", 
+where = "'cf[10021]' = 'ABCD' AND Created > '2019-01-01'")
 
 history <- jira.query(table = "history", where = "id = 'HIVE-22692'")
 
-history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", groupby = "id,toString")
+history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, 
+COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", 
+groupby = "id,toString")
 }

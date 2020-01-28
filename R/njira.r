@@ -2,244 +2,13 @@
 # Functions to get data and push into JIRA using REST API
 ##############################################################################
 
-## Initialize the nJira Library and resolve the dependencies
-.jira.init <- function() {
-
-  if (exists(".nJiraInit")) {return()}
-
-  options(warn = -1)
-  if (!require("httr")) {
-    install.packages("httr", quiet = TRUE, repos = "http://cran.rstudio.com")
-    library("httr")
-  }
-  if (!require("rjson")) {
-    install.packages("rjson", quiet = TRUE, repos = "http://cran.rstudio.com")
-    library("rjson")
-  }
-  if (!require("plyr")) {
-    install.packages("plyr", quiet = TRUE, repos = "http://cran.rstudio.com")
-    library("plyr")
-  }
-  .logTrace(paste("jira: Jira library initialized"))
-  .nJiraInit <<- 1
-}
-
-# Internal nJira function to fetch the list of Jira Tables
-.jira.tables <- function() {
-  # Specify virtual tables (represented by a leading '.')
-  stdtab <- c("issues", "history", "comments")
-  return(sort(unique(c(stdtab))))
-}
-
-# Internal nJira function to fetch the list of fields by Jira tables
-.jira.fields <- function(table) {
-  if (table == "history") {
-    return(sort(unique(c("field", "fieldtype", "from", "fromString", "to", "toString", "author", "name", "created", "id"))))
-  }
-  if (table == "issues") {
-    return(sort(unique(c(append(.issueFields$name, "id")))))
-  }
-  if (table == "comments") {
-    return(sort(unique(c("author", "comment", "createdDate"))))
-  }
-}
-
-# Internal nJira function to define the list of searchable fields by table
-.jira.searchable <- function(table) {
-  if (table == "history" || table == "comments") {
-    return(c("id"))
-  }
-}
-
-# Internal nJira function to fetch the fields list from issues table of Jira
-.jira.issues.fields <- function(default=F) {
-  .logTrace(paste("jira: Fetch the fields list of isuues table"))
-  .logTrace(paste("jira: Running Fields Query: ", .jiraEnv, "/rest/api/2/field", sep=""), pr = F)
-  resp <- GET(paste(.jiraEnv, "/rest/api/2/field", sep=""), add_headers("Content-Type" = "application/json"))
-  if (length(content(resp)) <= 0) {return(NULL)}
-  df <- data.frame(do.call(rbind,content(resp)))
-  df <- df[, !(colnames(df) %in% c("clauseNames", "schema"))]
-  df <- as.data.frame(sapply(df, function(x) as.character(x)), stringsAsFactors = F)
-  if(default == T){
-    resp <- GET(paste(.jiraEnv, "/rest/api/2/user/columns", sep = ""), add_headers("Content-Type" = "application/json"))
-    if (length(content(resp)) <= 0) {return(NULL)}
-    ddf <- as.data.frame(do.call(rbind, content(resp)))
-    df <- df[df$id %in% ddf$value,]
-  }
-  return(df)
-}
-
-# Internal nJira native and custom fields mapping function
-.jira.fields.map <- function(fields, toAlias = F) {
-  df <- .issueFields
-  fieldsNew <- character(0)
-  for (fld in fields) {
-    if(toAlias == F) {
-      if (is.element(fld, df$id)) {fieldsNew <- append(fieldsNew, fld)}
-      else if (is.element(fld, df$name)) {
-        ## If two fields of same alias name exists and one of them is native field then return native else return all matches
-        if (length(df[df$name == fld, "id"]) > 1 & length(df[df$name == fld & df$custom == "FALSE", "id"]) == 1) {
-          fieldsNew <- append(fieldsNew, df[df$name == fld & df$custom == "FALSE", "id"])
-        } else {fieldsNew <- append(fieldsNew, df[df$name == fld, "id"])}
-      }
-      else {.logTrace(paste("jira: Following field doesn't exist in JIRA fields -", fld), pr = F)}
-    } else {
-      if (!is.element(fld, df$id)) {fieldsNew <- append(fieldsNew, fld)}
-      else {fieldsNew <- append(fieldsNew, df[df$id == fld, "name"])}
-    }
-  }
-  return(fieldsNew)
-}
-
-# Internal nJira Changelog fetch function
-.jira.changelogdf <- function(resp) {
-  if (length(content(resp)$errorMessages[[1]]) > 0) {
-    .logTrace("jira: No Issues found")
-    .logTrace(paste("jira: ", content(resp)$errorMessages[[1]]))
-    return()
-  } else {
-    id <- content(resp)$key
-    df <- as.data.frame(do.call(rbind, content(resp)$changelog$histories))
-    for (r in 1:nrow(df)) {
-      cdf <- as.data.frame(do.call(rbind, df$items[[r]]))
-      cdf$author <- unlist(df$author[[r]])["name"]
-      cdf$name <- unlist(df$author[[r]])["displayName"]
-      cdf$created <- df$created[[r]]
-      if (!exists("chlog")) {chlog <- cdf} else {chlog <- rbind(chlog, cdf)}
-    }
-    chlog$id <- id
-    chlog <- as.data.frame(lapply(chlog, function(x) as.character(x)), stringsAsFactors = F)
-    return(chlog)
-  }
-}
-
-# Internal nJira function takes an issue Id as an argument and returns its complete changelog/history in a dataframe.
-.jira.issue.changelog <- function(id) {
-  .logTrace(paste("jira: Fetching changelog of Issue -", id), pr = F)
-  .logTrace(paste("jira: Running Changelog Query: ", .jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), pr = F)
-  resp <- GET(paste(.jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), add_headers("Content-Type" = "application/json"))
-  df <- .jira.changelogdf(resp)
-  return(df)
-}
-
-# Internal nJira function to fetch comments
-.jira.commentsdf <- function(resp) {
-  if (length(content(resp)$errorMessages[[1]]) > 0) {
-    .logTrace("jira: No comments on the issue found")
-    .logTrace(paste("jira: ", content(resp)$errorMessages[[1]]))
-    return()
-  } else {
-    df <- as.data.frame(do.call(rbind, content(resp)$comments))
-    df <- df[,c('author','body','created')]
-    df$created <- as.character(df$created)
-    df$body <- as.character(df$body)
-
-    colnames(df)[colnames(df) == 'body'] <- 'comment'
-
-    df$author <- sapply(df$author, function(x) {
-      return(x$name)
-    })
-
-    return(df)
-  }
-}
-
-# Internal nJira function takes an issue Id as an argument and returns its complete comments in a dataframe.
-.jira.issue.comments <- function(id) {
-  .logTrace(paste("jira: Fetching comments of Issue -", id), pr = F)
-  .logTrace(paste("jira: Running comments Query: ", .jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), pr = F)
-  resp <- GET(paste(.jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), add_headers("Content-Type" = "application/json"))
-  df <- .jira.commentsdf(resp)
-  return(df)
-}
-
-# Internal nJira issue search query
-.jira.searchqry <- function(query, clean = F) {
-  .logTrace(paste("jira: Running Search Query: ", .jiraEnv, "/rest/api/2/search?jql=", query, sep = ""), pr = F)
-  resp <- GET(paste(.jiraEnv, "/rest/api/2/search?jql=", query, sep = ""), add_headers("Content-Type" = "application/json"))
-
-  if (length(content(resp)$errorMessages[[1]]) > 0) {
-    .logTrace("jira: Error in Query")
-    .logTrace(content(resp)$errorMessages[[1]])
-    return(NULL)
-  }
-
-  if (content(resp)$total == 0 || length(content(resp)$issues) == 0) {
-    .logTrace("jira: No Issues found", pr = F)
-    return(NULL)
-  }
-
-  dm <- as.data.frame(do.call(rbind, content(resp)$issues))
-  df <- list()
-  for (n in 1:length(dm$fields)) {
-    df[[n]] <- as.data.frame(do.call(rbind, dm$fields[n]))
-  }
-  df <- rbind.fill(df)
-  df <- sapply(df, function(clm) {
-    lapply(clm, function(x) {
-      x <- unlist(x)
-      if (.jiraVal == "1") {if ("displayName" %in% names(x)) {if (x[["displayName"]] != "") {return (x[["displayName"]])}}}
-      if ("name" %in% names(x)) {
-        rval = x[["name"]]
-        if ("child.name" %in% names(x)) {rval <- paste(rval, x[["child.name"]], sep = " - ")}
-        return (rval)
-      }
-      if ("value" %in% names(x)) {
-        rval = x[["value"]]
-        if ("child.value" %in% names(x)) {rval <- paste(rval, x[["child.value"]], sep = " - ")}
-        return (rval)
-      }
-      return(x)
-    })
-  })
-
-  if (is.vector(df)) {df <- t(as.matrix(df))}
-  df <- as.data.frame(df, stringsAsFactors = F)
-  df <- as.data.frame(lapply(df, function(x) as.character(x)), stringsAsFactors = F)
-  if (clean == T) {df <- Filter(function(x)!all(x == "NULL"), df)}
-  colnames(df) <- .jira.fields.map(colnames(df), toAlias = T)
-  df$id <- as.character(dm$key)
-  return(df)
-}
-
-# Internal nJira function takes JIRA search queries related to issues (As you pass them on JIRA) and returns the response in a dataframe.
-.jira.search.issue <- function(query, startAt=0, maxresults=NULL, fields = NULL, clean = F) {
-
-  # Replace space in query with %20
-  query <- gsub(" ", "%20", query)
-
-  # which fields to fetch in search query
-  if (is.null(fields)) {fields <- paste(.jira.issues.fields(default = T)$id, collapse=",")}
-  else if (fields == "ALL") {fields <- "*all,-comment" ; clean <- TRUE}
-  else {fields <- paste(.jira.fields.map(unlist(strsplit(fields, ","))), collapse=",")}
-
-  results <- data.frame()
-  if (!is.null(maxresults)) {
-    if (maxresults > 1000) {
-      n <- startAt
-
-      # For more than 1000 results, break query into chunks of 1000
-      while (n < maxresults) {
-        if (maxresults - n <= 1000) {cnt <- maxresults - n} else {cnt <- 1000}
-        querytmp <- paste(query, "&startAt=", n, "&maxResults=", cnt, "&fields=", fields, sep="")
-        df <- .jira.searchqry(querytmp, clean)
-        if (is.null(df)) {break}
-        results <- rbind.fill(results, df)
-        n <- as.integer(n + 1000)
-      }
-
-      # For less than = 1000 max results, get all results in a shot
-    } else {
-      query <- paste(query, "&startAt=", startAt, "&maxResults=", maxresults, "&fields=", fields, sep="")
-      results <- .jira.searchqry(query, clean)
-    }
-  } else {
-    # If maxresult is not provided then get 1000 rows by default
-    query <- paste(query, "&startAt=", startAt, "&maxResults=", 1000, "&fields=", fields, sep="")
-    results <- .jira.searchqry(query, clean)
-  }
-  return(results)
-}
+# Declaring global variables
+pkg.globals <- new.env()
+pkg.globals$.jiraEnv <- ""
+pkg.globals$.jiraUser <- ""
+pkg.globals$.jiraPwd <- ""
+pkg.globals$.jiraVal <- ""
+pkg.globals$.issueFields <- ""
 
 #' Jira Login Function
 #'
@@ -251,30 +20,33 @@
 #' @param jira.val 0/1 how should the list values be returned in the query results.
 #' @return The function autheticates into JIRA environment..
 #' @examples
-#' jira.login(jira.env = "https://issues.apache.org/jira", jira.user = "TestUser", jira.pwd = "TestPwd")
-#'
-jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0) {
+#' jira.login(jira.env="https://issues.apache.org/jira", jira.user="user", jira.pwd="pwd")
 
-  .jira.init()
-  .jiraEnv <<- jira.env
-  .jiraUser <<- jira.user
-  .jiraPwd <<- jira.pwd
-  .jiraVal <<- jira.val
+jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0) {
+  
+  options(warn = -1)
+  pkg.globals$.jiraEnv <- jira.env
+  pkg.globals$.jiraUser <- jira.user
+  pkg.globals$.jiraPwd <- jira.pwd
+  pkg.globals$.jiraVal <- jira.val
+  
+  # Return if blank value is passed in global variables
+  if (pkg.globals$.jiraEnv == "") {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}
 
   ## Check if live JIRA session exists
-  resp <- GET(paste(.jiraEnv, "/rest/auth/1/session", sep = ""))
+  resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/auth/1/session", sep = ""))
   if(resp$status_code == 401) {
     # Clear any previous issueFields cache
-    if (exists(".issueFields")) {rm(.issueFields)}
+    if (exists("pkg.globals$.issueFields")) {rm(pkg.globals$.issueFields)}
     .logTrace("JIRA session inactive or expired. Sending login request")
-    resp <- POST(paste(.jiraEnv, "/rest/auth/1/session", sep = ""), authenticate(.jiraUser, .jiraPwd), add_headers("Content-Type" = "application/json"))
+    resp <- POST(paste(pkg.globals$.jiraEnv, "/rest/auth/1/session", sep = ""), authenticate(pkg.globals$.jiraUser, pkg.globals$.jiraPwd), add_headers("Content-Type" = "application/json"))
     if(resp$status_code == 400) {.logTrace("JIRA Login Done")} else {.logTrace("JIRA Login Failed")}
   } else if(resp$status_code == 200) {.logTrace("Jira session active.")}
 
   ## Cache the Jira Issue Fields that is used in various function
-  if (!exists(".issueFields")) {
-    .issueFields <<- .jira.issues.fields()
-    .logTrace("Jira fields cached")
+  if (!exists("pkg.globals$.issueFields")) {
+    pkg.globals$.issueFields <- .jira.issues.fields()
+    .logTrace("Jira fields cached", pr = F)
   }
 }
 
@@ -292,8 +64,7 @@ jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.
 #' fields <- jira.metadata(table = "issues", fields = c("Created", "Date Required", "Dev Status"))
 
 jira.metadata <- function(table = NULL, fields = NULL) {
-  if (!exists(".jiraEnv")) {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}
-  jira.login(.jiraEnv, .jiraUser, .jiraPwd, .jiraVal)
+  jira.login(pkg.globals$.jiraEnv, pkg.globals$.jiraUser, pkg.globals$.jiraPwd, pkg.globals$.jiraVal)
   return(rk.metadata(table = table, fields = fields, gettabs = .jira.tables, getflds = .jira.fields, infofile = "jira"))
 }
 
@@ -310,17 +81,21 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 #' @param groupby specifies the list of fields on which the data is grouped.
 #' @return The function returns the Jira query result as a dataframe.
 #' @examples
-#' issues <- jira.query(table = "issues", fields = "id, Created, Status, Priority AS IssuePriority", where = "project = 'HIVE' AND created >= '2016-01-01' AND created <= '2019-01-01' AND Status IN ('Open', 'Closed', 'Resolved')")
+#' issues <- jira.query(table = "issues", fields = "id AS IssueId, Created, Status, Priority", 
+#' where = "project = 'HIVE' AND created >= '2019-01-01' AND created <= '2019-12-31' AND 
+#' Status IN ('Open', 'Closed', 'Resolved')")
 #'
-#' issues <- jira.query(table = "issues", fields = "id AS IssueId, Created", where = "'cf[10021]' = 'ABCD' AND Created > '2017-01-01'")
+#' issues <- jira.query(table = "issues", fields = "id AS IssueId, Created", 
+#' where = "'cf[10021]' = 'ABCD' AND Created > '2019-01-01'")
 #'
 #' history <- jira.query(table = "history", where = "id = 'HIVE-22692'")
 #'
-#' history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", groupby = "id,toString")
+#' history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, 
+#' COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", 
+#' groupby = "id,toString")
 
 jira.query <- function(table, fields = NULL, where = NULL, groupby = NULL) {
-  if (!exists(".jiraEnv")) {return(.logTrace("You have not yet authenticated into Jira Environment using Jira.Login() function"))}
-  jira.login(.jiraEnv, .jiraUser, .jiraPwd, .jiraVal)
+  jira.login(pkg.globals$.jiraEnv, pkg.globals$.jiraUser, pkg.globals$.jiraPwd, pkg.globals$.jiraVal)
   result <- data.frame()
   if (table == "issues") {
     if (is.null(where) ) {

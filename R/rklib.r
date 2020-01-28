@@ -34,9 +34,6 @@
 #' @param getflds is a function that returns the list of all the fields for the given table.
 #' @param infofile is the name of the file containing information about different tables and fields of the given interface.
 #' @return The function returns the resulting data frame.
-#' @seealso \code{\link{rk.query}} for the query function.
-#' @examples
-#' info <- rk.metadata(table, fields, .pm.tables, .pm.fields, "pmeter")
 
 rk.metadata <- function(table = NULL, fields = NULL, gettabs, getflds, infofile = NULL) {
   tabfld <- data.frame(Table = character(0), Field = character(0), stringsAsFactors = F)
@@ -98,9 +95,6 @@ rk.metadata <- function(table = NULL, fields = NULL, gettabs, getflds, infofile 
 #' @param fields clause following simplified sql syntax.
 #' @param mode specifies the parsing logic. The default value '@' returns the field list in perfmeter query format. The '+' value returns a field list used for grouping the dataframe with alias names. The '=' value returns a field list used for grouping the dataframe with original names. The '*' value returns the alias list used for renaming the columns. Any other value returns a field list used for selecting columns from a dataframe.
 #' @return The function returns the processed fields clause.
-#' @seealso \code{\link{rk.where}} for where clause and \code{\link{rk.groupby}} for groupby clause.
-#' @examples
-#' fields <- rk.fields("PlatformId, ComponentId AS CompId, SUM(CpuPctAvg) AS CPUPct, MAX(MemPct)")
 
 rk.fields <- function(fields, mode = "@") {
   mcomma <- F
@@ -163,10 +157,8 @@ rk.fields <- function(fields, mode = "@") {
 #' }
 #' @param where clause following simplified sql syntax.
 #' @param mode specifies the parsing logic. The default value '@' returns the where clause in perfmeter format. The '=' value returns the where clause in IOD format. The '~' value returns the where clause in Jira format. The '' (empty string) value returns a where clause used with a sql statement. If a dataframe name is passed, the function returns the where clause for use with a dataframe.
+#' @param fields fields to be filtered.
 #' @return The function returns the processed where clause.
-#' @seealso \code{\link{rk.fields}} for fields clause and \code{\link{rk.groupby}} for groupby clause.
-#' @examples
-#' where <- rk.where("PlatformId = 0 AND ComponentId = 11")
 
 rk.where <- function(where = NULL, mode = "@", fields = NULL) {
   if (is.null(where) || !nchar(where)) return("")
@@ -409,9 +401,6 @@ rk.where <- function(where = NULL, mode = "@", fields = NULL) {
 #' @param groupby clause following simplified sql syntax.
 #' @param mode specifies the parsing logic. The default value '@' returns the groupby clause in perfmeter format. Any other value returns the groupby fields used for aggregation.
 #' @return The function returns the processed groupby clause.
-#' @seealso \code{\link{rk.fields}} for fields clause and \code{\link{rk.where}} for where clause.
-#' @examples
-#' groupby <- rk.groupby("PlatformId, ComponentId")
 
 rk.groupby <- function(groupby = NULL, mode = "@") {
   if (is.null(groupby) || !nchar(groupby)) return("")
@@ -442,15 +431,11 @@ rk.groupby <- function(groupby = NULL, mode = "@") {
 #'
 #' The function applies the given fields, where clause, and group by fields on the specified data frame.
 #'
-#' @param data frame to be processed.
-#' @param fields to be filtered.
+#' @param dframe data frame to be processed.
+#' @param fields fields to be filtered.
 #' @param where clause applied on the data.
 #' @param groupby used to aggregate the fields.
 #' @return The function returns the resulting data frame.
-#' @seealso \code{\link{rk.metadata}} for tables and field details, \code{\link{rk.fields}} for field clause, \code{\link{rk.where}} for where clause and \code{\link{rk.groupby}} for groupby clause.
-#' @examples
-#' data <- rk.query(data, "CpuPctAvg,MemPct", "PlatformId = 0 AND ComponentId = 11")
-#' data <- rk.query(data, "ComponentId,AVG(CpuPctAvg),MAX(MemPct)", "PlatformId = 0", "ComponentId")
 
 rk.query <- function(dframe, fields = NULL, where = NULL, groupby = NULL) {
   .logTrace(paste("Query Fields '", fields, "' Where '", where, "' GroupBy '", groupby, "'", sep = ""), pr = F)
@@ -462,10 +447,6 @@ rk.query <- function(dframe, fields = NULL, where = NULL, groupby = NULL) {
   eval(parse(text = paste("dframe <- dframe[", rk.where(where, "dframe"), ", unique(c(", rk.fields(flds, ""), "))]", sep = "")))
 
   if (nchar(gby <- rk.groupby(groupby, ""))) {
-    if (!require("plyr")) {
-      install.packages("plyr", quiet = T, repos = "http://cran.rstudio.com")
-      library("plyr")
-    }
 
     eval(parse(text = paste("dframe <- ddply(dframe, c(", gby, "), summarise, ", rk.fields(fields, "="), ")", sep = "")))
 

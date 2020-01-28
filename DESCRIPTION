@@ -1,15 +1,19 @@
 Package: nJira
 Type: Package
-Title: SQL like query interface for JIRA in R language
 Version: 0.1.0
+Title: SQL like query interface for JIRA in R language
+Description: This package provides a SQL like query interface to fetch data from any [JIRA](https://www.atlassian.com/software/jira) installation. The data is fetched into R dataframe (using [JIRA REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/)).
+Author: Nikhil Choudhry [aut, cre]
 Authors@R: person("Nikhil", "Choudhry", email = "nikhil.choudhry@gmail.com", role = c("aut", "cre"))
-Description: This package provides a SQL like query interface to fetch data from any [JIRA](https://www.atlassian.com/software/jira) installation. The data is fetched into R dataframe (using [JIRA REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/))
-License: Public
+Maintainer: Nikhil Choudhry <nikhil.choudhry@gmail.com>
+URL: https://www.linkedin.com/in/nikhil-choudhry, https://github.com/nikhilchoudhry/nJira
+License: MIT + file LICENSE
+RoxygenNote: 6.0.1
+Roxygen: list(markdown = TRUE)
+Encoding: UTF-8
 LazyData: TRUE
 NeedsCompilation: no
-RoxygenNote: 6.0.1
-Author: Nikhil Choudhry [aut, cre]
-Maintainer: Nikhil Choudhry <nikhil.choudhry@gmail.com>
-URL:
 Imports:
-  httr,rjson,plyr
+  httr,
+  rjson,
+  plyr
