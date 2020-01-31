@@ -8,8 +8,11 @@ pkg.globals$.jiraEnv <- ""
 pkg.globals$.jiraUser <- ""
 pkg.globals$.jiraPwd <- ""
 pkg.globals$.jiraVal <- ""
+pkg.globals$.jiraIsActive <- F
+pkg.globals$.jiraLastLoginChk <- Sys.time()
 pkg.globals$.issueFields <- ""
 pkg.globals$.logs <- F
+
 
 #' Jira Login Function
 #'
@@ -19,7 +22,7 @@ pkg.globals$.logs <- F
 #' @param jira.user Jira User Name
 #' @param jira.pwd Jira Password
 #' @param jira.val 0/1 how should the list values be returned in the query results
-#' @param logs set it to True or False based on loggin is required on not (Default = F)
+#' @param logs debug logs required on not (Default = F)
 #' @return The function autheticates into JIRA environment..
 #' @examples
 #' jira.login(jira.env="https://issues.apache.org/jira", 
@@ -28,6 +31,14 @@ pkg.globals$.logs <- F
 jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0, logs = F) {
   
   options(warn = -1)
+  
+  if (pkg.globals$.jiraIsActive & difftime(Sys.time(), pkg.globals$.jiraLastLoginChk, units="sec") < 2) {
+    .logTrace("Jira.login() function used again in less than two second with an active connection", pr=F)
+    pkg.globals$.jiraLastLoginChk <- Sys.time()
+    return()
+  }
+  
+  # Connection parameters  
   pkg.globals$.jiraEnv <- jira.env
   pkg.globals$.jiraUser <- jira.user
   pkg.globals$.jiraPwd <- jira.pwd
@@ -44,8 +55,8 @@ jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.
     if (exists("pkg.globals$.issueFields")) {rm(pkg.globals$.issueFields)}
     .logTrace("JIRA session inactive or expired. Sending login request")
     resp <- POST(paste(pkg.globals$.jiraEnv, "/rest/auth/1/session", sep = ""), authenticate(pkg.globals$.jiraUser, pkg.globals$.jiraPwd), add_headers("Content-Type" = "application/json"))
-    if(resp$status_code == 400) {.logTrace("JIRA Login Done")} else {.logTrace("JIRA Login Failed")}
-  } else if(resp$status_code == 200) {.logTrace("Jira session active.")}
+    if(resp$status_code == 400) {.logTrace("JIRA Login Done"); pkg.globals$.jiraIsActive=T; pkg.globals$.jiraLastLoginChk=Sys.time()} else {.logTrace("JIRA Login Failed"); pkg.globals$.jiraIsActive=F}
+  } else if(resp$status_code == 200) {.logTrace("Jira session active."); pkg.globals$.jiraIsActive=T; pkg.globals$.jiraLastLoginChk=Sys.time()}
 
   ## Cache the Jira Issue Fields that is used in various function
   if (!exists("pkg.globals$.issueFields")) {
