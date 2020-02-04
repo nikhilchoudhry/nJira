@@ -17,6 +17,7 @@ To get the current development version from github:
 
 ```R
 # install.packages("devtools")
+library(devtools)
 devtools::install_github("nikhilchoudhry/nJira")
 ```
 
