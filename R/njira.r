@@ -8,10 +8,10 @@ pkg.globals$.jiraEnv <- ""
 pkg.globals$.jiraUser <- ""
 pkg.globals$.jiraPwd <- ""
 pkg.globals$.jiraVal <- ""
-pkg.globals$.jiraIsActive <- F
+pkg.globals$.jiraIsActive <- FALSE
 pkg.globals$.jiraLastLoginChk <- Sys.time()
 pkg.globals$.issueFields <- ""
-pkg.globals$.logs <- F
+pkg.globals$.logs <- FALSE
 
 
 #' Jira Login Function
@@ -22,18 +22,18 @@ pkg.globals$.logs <- F
 #' @param jira.user Jira User Name
 #' @param jira.pwd Jira Password
 #' @param jira.val 0/1 how should the list values be returned in the query results
-#' @param logs debug logs required on not (Default = F)
+#' @param logs debug logs required on not (Default = FALSE)
 #' @return The function autheticates into JIRA environment..
 #' @examples
 #' jira.login(jira.env="https://issues.apache.org/jira", 
 #' jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
 
-jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0, logs = F) {
+jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.val = 0, logs = FALSE) {
   
   options(warn = -1)
   
   if (pkg.globals$.jiraIsActive & difftime(Sys.time(), pkg.globals$.jiraLastLoginChk, units="sec") < 2) {
-    .logTrace("Jira.login() function used again in less than two second with an active connection", pr=F)
+    .logTrace("Jira.login() function used again in less than two second with an active connection", pr=FALSE)
     pkg.globals$.jiraLastLoginChk <- Sys.time()
     return()
   }
@@ -55,13 +55,13 @@ jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.
     if (exists("pkg.globals$.issueFields")) {rm(pkg.globals$.issueFields)}
     .logTrace("JIRA session inactive or expired. Sending login request")
     resp <- POST(paste(pkg.globals$.jiraEnv, "/rest/auth/1/session", sep = ""), authenticate(pkg.globals$.jiraUser, pkg.globals$.jiraPwd), add_headers("Content-Type" = "application/json"))
-    if(resp$status_code == 400) {.logTrace("JIRA Login Done"); pkg.globals$.jiraIsActive=T; pkg.globals$.jiraLastLoginChk=Sys.time()} else {.logTrace("JIRA Login Failed"); pkg.globals$.jiraIsActive=F}
-  } else if(resp$status_code == 200) {.logTrace("Jira session active."); pkg.globals$.jiraIsActive=T; pkg.globals$.jiraLastLoginChk=Sys.time()}
+    if(resp$status_code == 400) {.logTrace("JIRA Login Done"); pkg.globals$.jiraIsActive=TRUE; pkg.globals$.jiraLastLoginChk=Sys.time()} else {.logTrace("JIRA Login Failed"); pkg.globals$.jiraIsActive=FALSE}
+  } else if(resp$status_code == 200) {.logTrace("Jira session active."); pkg.globals$.jiraIsActive=TRUE; pkg.globals$.jiraLastLoginChk=Sys.time()}
 
   ## Cache the Jira Issue Fields that is used in various function
   if (!exists("pkg.globals$.issueFields")) {
     pkg.globals$.issueFields <- .jira.issues.fields()
-    .logTrace("Jira fields cached", pr = F)
+    .logTrace("Jira fields cached", pr = FALSE)
   }
 }
 
@@ -121,7 +121,7 @@ jira.query <- function(table, fields = NULL, where = NULL, groupby = NULL) {
     if (nrow(result) & !is.null(fields)) {
       if (flds != "ALL") {
         ## Renme column names as the JIRA query function changes the user supplied field names into alias names from JIRA and it would not work with rk.query
-        nord <- .jira.fields.map(unlist(strsplit(flds, ",")), toAlias = T)
+        nord <- .jira.fields.map(unlist(strsplit(flds, ",")), toAlias = TRUE)
         ### (to be removed) Incase if some selective fields in the query are not returned in the result, we add the corrosponding column names with null value
           l <- nord[!nord %in% names(result)]
           if (length(l) > 0) {
@@ -142,7 +142,7 @@ jira.query <- function(table, fields = NULL, where = NULL, groupby = NULL) {
   }
 
   if (table == "history" || table == "comments") {
-    if (is.null(where) || (k <- regexpr("^\\s*id\\s*=\\s*'[^']+'(\\s*AND)?\\s*", where, ignore.case = F, perl = T)) <= 0) {
+    if (is.null(where) || (k <- regexpr("^\\s*id\\s*=\\s*'[^']+'(\\s*AND)?\\s*", where, ignore.case = FALSE, perl = TRUE)) <= 0) {
       stop(paste("The where clause of JIRA '", table, "' table must select the 'id' of the issue for which details are required.", sep = ""))
     }
     qwhere <- rk.where(where, "=", .jira.searchable(table))

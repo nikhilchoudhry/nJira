@@ -4,21 +4,21 @@
 }
 
 # function for logging
-.logTrace <- function(msg = NULL, pr = T, fl = NULL) {
+.logTrace <- function(msg = NULL, pr = TRUE, fl = NULL) {
 
   if(pr) {print(paste(.tStamp(), ":", msg))}
   if (pkg.globals$.logs) {
     if (is.null(fl)) {
       fldr = paste(getwd(), "Logs", sep = "/")
-      if (!dir.exists(fldr)) {dir.create(fldr, recursive = T)}
+      if (!dir.exists(fldr)) {dir.create(fldr, recursive = TRUE)}
       fl = paste(fldr, "/nJira_log_", format(Sys.time(), "%d-%m-%y.txt"), sep = "")
     }
   
     if (!file.exists(fl)) {
       file.create(fl)
-      write.table(paste(.tStamp(), ": This package provides a SQL query like interface to fetch data from JIRA (using JIRA REST API)"),fl, append = T, row.names = F, col.names = F, sep = "")
+      write.table(paste(.tStamp(), ": This package provides a SQL query like interface to fetch data from JIRA (using JIRA REST API)"),fl, append = TRUE, row.names = FALSE, col.names = FALSE, sep = "")
     }
-    write.table(paste(.tStamp(), ":", msg), fl, append = T, row.names = F, col.names = F, sep = "")
+    write.table(paste(.tStamp(), ":", msg), fl, append = TRUE, row.names = FALSE, col.names = FALSE, sep = "")
   }
 }
 
@@ -38,7 +38,7 @@
 #' @return The function returns the resulting data frame.
 
 rk.metadata <- function(table = NULL, fields = NULL, gettabs, getflds, infofile = NULL) {
-  tabfld <- data.frame(Table = character(0), Field = character(0), stringsAsFactors = F)
+  tabfld <- data.frame(Table = character(0), Field = character(0), stringsAsFactors = FALSE)
 
   if (!is.null(table) && length(table) > 1)
     stop("Table parameter accepts a single table name")
@@ -74,11 +74,11 @@ rk.metadata <- function(table = NULL, fields = NULL, gettabs, getflds, infofile 
     if (file.exists(fname)) {
       mdata <- read.csv(fname)
 
-      tabfld <- merge(tabfld, mdata, by = c("Table", "Field"), all.x = T)
+      tabfld <- merge(tabfld, mdata, by = c("Table", "Field"), all.x = TRUE)
       tabfld[is.na(tabfld$Type),]$Type <- "Str"
       tabfld[is.na(tabfld$Format),]$Format <- ""
     } else {
-      .logTrace(paste("Metadata description file doesn't exist -", fname), pr = F)
+      .logTrace(paste("Metadata description file doesn't exist -", fname), pr = FALSE)
     }
   }
 
@@ -99,15 +99,15 @@ rk.metadata <- function(table = NULL, fields = NULL, gettabs, getflds, infofile 
 #' @return The function returns the processed fields clause.
 
 rk.fields <- function(fields, mode = "@") {
-  mcomma <- F
+  mcomma <- FALSE
   mfields <- ""
 
   fields <- unlist(strsplit(fields, ","))
   for (fld in fields) {
-    if ((sfld <- sub("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "~,\\1,~", fld, ignore.case = T, perl = T)) == fld)
-      if ((sfld <- sub("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s+AS\\s+([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "~,\\1,\\3", fld, ignore.case = T, perl = T)) == fld)
-        if ((sfld <- sub("^\\s*(MIN|MEDIAN|AVG|MAX|COUNT|SUM)\\(\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*\\)\\s*$", "\\1,\\2,~", fld, ignore.case = T, perl = T)) == fld)
-          if ((sfld <- sub("^\\s*(MIN|MEDIAN|AVG|MAX|COUNT|SUM)\\(\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*\\)\\s+AS\\s+([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "\\1,\\2,\\4", fld, ignore.case = T, perl = T)) == fld)
+    if ((sfld <- sub("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "~,\\1,~", fld, ignore.case = TRUE, perl = TRUE)) == fld)
+      if ((sfld <- sub("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s+AS\\s+([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "~,\\1,\\3", fld, ignore.case = TRUE, perl = TRUE)) == fld)
+        if ((sfld <- sub("^\\s*(MIN|MEDIAN|AVG|MAX|COUNT|SUM)\\(\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*\\)\\s*$", "\\1,\\2,~", fld, ignore.case = TRUE, perl = TRUE)) == fld)
+          if ((sfld <- sub("^\\s*(MIN|MEDIAN|AVG|MAX|COUNT|SUM)\\(\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*\\)\\s+AS\\s+([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", "\\1,\\2,\\4", fld, ignore.case = TRUE, perl = TRUE)) == fld)
             stop(paste("Invalid field expression '", sub("^\\s*", "", sub("\\s*$", "", fld)), "' specified", sep = ""))
 
     toks <- unlist(strsplit(sfld, ","))
@@ -116,27 +116,27 @@ rk.fields <- function(fields, mode = "@") {
       if (toks[1] != "~")
         s <- paste(toupper(toks[1]), "(", s, ")", sep = "")
       mfields <- paste(mfields, ifelse(mcomma, ",", ""), s, sep = "")
-      mcomma <- T
+      mcomma <- TRUE
     } else if (mode == "+" || mode == "=") {
       if (toks[1] != "~") {
         toks[1] = tolower(toks[1])
         if (toks[1] == "avg") toks[1] <- "mean"
         if (toks[1] == "count") toks[1] <- "length"
         mfields <- paste(mfields, ifelse(mcomma, ",", ""), ifelse(mode == "=" || toks[3] == "~", toks[2], toks[3]), " = ", toks[1], "(", toks[2], ")", sep = "")
-        mcomma <- T
+        mcomma <- TRUE
       }
     } else if (mode == "*") {
       id <- ifelse(toks[3] == "~", toks[2], toks[3])
       if (substr(id, 1, 1) == "'" && substr(id, nchar(id), nchar(id)) == "'")
         id <- substr(id, 2, nchar(id) - 1)
       mfields <- paste(mfields, ifelse(mcomma, ",", ""), id, sep = "")
-      mcomma <- T
+      mcomma <- TRUE
     } else {
       id <- toks[2]
       if (substr(id, 1, 1) == "'" && substr(id, nchar(id), nchar(id)) == "'")
         id <- substr(id, 2, nchar(id) - 1)
       mfields <- paste(mfields, ifelse(mcomma, ",", ""), "'", id, "'", sep = "")
-      mcomma <- T
+      mcomma <- TRUE
     }
   }
 
@@ -211,7 +211,7 @@ rk.where <- function(where = NULL, mode = "@", fields = NULL) {
       where <- sub("^\\s+", "", where)
 
       for (n in 1:ntok)
-        if ((k <- regexpr(retok[n], where, ignore.case = T, perl = T)) > 0)
+        if ((k <- regexpr(retok[n], where, ignore.case = TRUE, perl = TRUE)) > 0)
           break
 
       if (n == END.OF.EXPR)
@@ -314,7 +314,7 @@ rk.where <- function(where = NULL, mode = "@", fields = NULL) {
           return("")
         if (sql)
           return(ifelse(eskip, "", paste(id, ifelse(not, " NOT", ""), " ", ifelse(jira, "~", "LIKE"), " ", s, sep = "")))
-        return(ifelse(eskip, "", paste(ifelse(not, "!", ""), "grep(", s, ", ", id, ", perl = T)", sep = "")))
+        return(ifelse(eskip, "", paste(ifelse(not, "!", ""), "grep(", s, ", ", id, ", perl = TRUE)", sep = "")))
       }
 
       stop(paste("Invalid 'IN' or 'LIKE' clause for identifier '", id, "' at token number ", e$k, sep = ""))
@@ -407,12 +407,12 @@ rk.where <- function(where = NULL, mode = "@", fields = NULL) {
 rk.groupby <- function(groupby = NULL, mode = "@") {
   if (is.null(groupby) || !nchar(groupby)) return("")
 
-  mcomma <- F
+  mcomma <- FALSE
   mgrpby <- ""
 
   grpby <- unlist(strsplit(groupby, ","))
   for (grp in grpby) {
-    if (!length(grep("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", grp, ignore.case = T, perl = T)))
+    if (!length(grep("^\\s*([\\w\\.]+|'((?:.(?!(?<![\\\\])'))*.?)')\\s*$", grp, ignore.case = TRUE, perl = TRUE)))
       stop(paste("Invalid group expression '", sub("^\\s*", "", sub("\\s*$", "", grp)), "' specified", sep = ""))
     grp <- sub("^\\s*", "", sub("\\s*$", "", grp))
 
@@ -423,7 +423,7 @@ rk.groupby <- function(groupby = NULL, mode = "@") {
         grp <- substr(grp, 2, nchar(grp) - 1)
       mgrpby <- paste(mgrpby, ifelse(mcomma, ",", ""), "'`", grp, "`'", sep = "")
     }
-    mcomma <- T
+    mcomma <- TRUE
   }
 
   return(mgrpby)
@@ -440,7 +440,7 @@ rk.groupby <- function(groupby = NULL, mode = "@") {
 #' @return The function returns the resulting data frame.
 
 rk.query <- function(dframe, fields = NULL, where = NULL, groupby = NULL) {
-  .logTrace(paste("Query Fields '", fields, "' Where '", where, "' GroupBy '", groupby, "'", sep = ""), pr = F)
+  .logTrace(paste("Query Fields '", fields, "' Where '", where, "' GroupBy '", groupby, "'", sep = ""), pr = FALSE)
 
   if (is.null(fields))
     fields <- paste(names(dframe), collapse = ",")

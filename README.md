@@ -1,13 +1,13 @@
 # nJira
 
-SQL like query interface for [JIRA](https://www.atlassian.com/software/jira) in R language
+SQL like query interface for [Jira](https://www.atlassian.com/software/jira) in R language
 
-This package provides a SQL like query interface to fetch data from any [JIRA](https://www.atlassian.com/software/jira) installation. The data is fetched into R dataframe (using [JIRA REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/))
+This package provides a SQL like query interface to fetch data from any [Jira](https://www.atlassian.com/software/jira) installation. The data is fetched into R dataframe (using [Jira REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/))
 
 Key features:
-  * Data is fetched using [JIRA REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) therefore can be used over web without needing to connect to any database.
-  * Function to authenticate into JIRA instance using `jira.login()`
-  * Function to fetch METADATA from JIRA instance using `jira.metadata()`
+  * Data is fetched using [Jira REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v2/) therefore can be used over web without needing to connect to any database.
+  * Function to authenticate into Jira instance using `jira.login()`
+  * Function to fetch METADATA from Jira instance using `jira.metadata()`
   * Function to QUERY jira data with SQL like syntax using `jira.query()`
   
   
@@ -22,24 +22,24 @@ devtools::install_github("nikhilchoudhry/nJira")
 ```
 
 ## Getting Started
-You should have an account in the JIRA instance to query its data. You can use the same log-in credentials that you use on your JIRA website.
+You should have an account in the Jira instance to query its data. You can use the same log-in credentials that you use on your Jira website.
 
-Assuming your JIRA credentials are as follows
+Assuming your Jira credentials are as follows
 
-  * JIRA Environment (web link): https://issues.apache.org/jira
-  * JIRA Username: jiraTestUser
-  * JIRA Password: jiraTestPwd
+  * Jira Environment (web link): https://issues.apache.org/jira
+  * Jira Username: jiraTestUser
+  * Jira Password: jiraTestPwd
 
-### Authenticate in JIRA using the following command:
+### Authenticate in Jira using the following command:
 ```{r}
 jira.login(jira.env = "https://issues.apache.org/jira", jira.user = "jiraTestUser", jira.pwd = "jiraTestPwd")
 ```
-### Fetch the Metadata of JIRA using the following command:
+### Fetch the Metadata of Jira using the following command:
 ```{r}
 jiraMetadata <- jira.metadata()
 ```
 
-### Query JIRA tables and fields (lookup via metadata) using the following command:
+### Query Jira tables and fields (lookup via metadata) using the following command:
 ```{r}
 
 issues <- jira.query(table = "issues", fields = "id AS IssueId, Created, Status, Priority", 

@@ -4,7 +4,8 @@
 \alias{rk.metadata}
 \title{Processing Meta Data}
 \usage{
-rk.metadata(table = NULL, fields = NULL, gettabs, getflds, infofile = NULL)
+rk.metadata(table = NULL, fields = NULL, gettabs, getflds,
+  infofile = NULL)
 }
 \arguments{
 \item{table}{name of the interface tables. If not specified, all the tables of the given interface are returned.}

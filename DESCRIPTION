@@ -1,8 +1,8 @@
 Package: nJira
 Type: Package
 Version: 0.1.1
-Title: SQL Like Query Interface for JIRA in R Language
-Description: SQL like query interface to fetch data from any [JIRA](<https://www.atlassian.com/software/jira>) installation. The data is fetched using [JIRA REST API](<https://developer.atlassian.com/cloud/jira/platform/rest/v2>)).
+Title: SQL Like Query Interface for 'Jira'
+Description: SQL like query interface to fetch data from any 'Jira' installation. The data is fetched using 'Jira' REST API.
 Author: Nikhil Choudhry [aut, cre]
 Authors@R: person("Nikhil", "Choudhry", email = "nikhil.choudhry@gmail.com", role = c("aut", "cre"))
 Maintainer: Nikhil Choudhry <nikhil.choudhry@gmail.com>

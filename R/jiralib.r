@@ -26,15 +26,15 @@
 }
 
 # Internal nJira function to fetch the fields list from issues table of Jira
-.jira.issues.fields <- function(default=F) {
-  .logTrace(paste("jira: Fetch the fields list of isuues table"), pr = F)
-  .logTrace(paste("jira: Running Fields Query: ", pkg.globals$.jiraEnv, "/rest/api/2/field", sep=""), pr = F)
+.jira.issues.fields <- function(default=FALSE) {
+  .logTrace(paste("jira: Fetch the fields list of isuues table"), pr = FALSE)
+  .logTrace(paste("jira: Running Fields Query: ", pkg.globals$.jiraEnv, "/rest/api/2/field", sep=""), pr = FALSE)
   resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/api/2/field", sep=""), add_headers("Content-Type" = "application/json"))
   if (length(content(resp)) <= 0) {return(NULL)}
   df <- data.frame(do.call(rbind,content(resp)))
   df <- df[, !(colnames(df) %in% c("clauseNames", "schema"))]
-  df <- as.data.frame(sapply(df, function(x) as.character(x)), stringsAsFactors = F)
-  if(default == T){
+  df <- as.data.frame(sapply(df, function(x) as.character(x)), stringsAsFactors = FALSE)
+  if(default == TRUE){
     resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/api/2/user/columns", sep = ""), add_headers("Content-Type" = "application/json"))
     if (length(content(resp)) <= 0) {return(NULL)}
     ddf <- as.data.frame(do.call(rbind, content(resp)))
@@ -44,11 +44,11 @@
 }
 
 # Internal nJira native and custom fields mapping function
-.jira.fields.map <- function(fields, toAlias = F) {
+.jira.fields.map <- function(fields, toAlias = FALSE) {
   df <- pkg.globals$.issueFields
   fieldsNew <- character(0)
   for (fld in fields) {
-    if(toAlias == F) {
+    if(toAlias == FALSE) {
       if (is.element(fld, df$id)) {fieldsNew <- append(fieldsNew, fld)}
       else if (is.element(fld, df$name)) {
         ## If two fields of same alias name exists and one of them is native field then return native else return all matches
@@ -56,7 +56,7 @@
           fieldsNew <- append(fieldsNew, df[df$name == fld & df$custom == "FALSE", "id"])
         } else {fieldsNew <- append(fieldsNew, df[df$name == fld, "id"])}
       }
-      else {.logTrace(paste("jira: Following field doesn't exist in JIRA fields -", fld), pr = F)}
+      else {.logTrace(paste("jira: Following field doesn't exist in JIRA fields -", fld), pr = FALSE)}
     } else {
       if (!is.element(fld, df$id)) {fieldsNew <- append(fieldsNew, fld)}
       else {fieldsNew <- append(fieldsNew, df[df$id == fld, "name"])}
@@ -82,15 +82,15 @@
       if (!exists("chlog")) {chlog <- cdf} else {chlog <- rbind(chlog, cdf)}
     }
     chlog$id <- id
-    chlog <- as.data.frame(lapply(chlog, function(x) as.character(x)), stringsAsFactors = F)
+    chlog <- as.data.frame(lapply(chlog, function(x) as.character(x)), stringsAsFactors = FALSE)
     return(chlog)
   }
 }
 
 # Internal nJira function takes an issue Id as an argument and returns its complete changelog/history in a dataframe.
 .jira.issue.changelog <- function(id) {
-  .logTrace(paste("jira: Fetching changelog of Issue -", id), pr = F)
-  .logTrace(paste("jira: Running Changelog Query: ", pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), pr = F)
+  .logTrace(paste("jira: Fetching changelog of Issue -", id), pr = FALSE)
+  .logTrace(paste("jira: Running Changelog Query: ", pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), pr = FALSE)
   resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "?expand=changelog", sep=""), add_headers("Content-Type" = "application/json"))
   df <- .jira.changelogdf(resp)
   return(df)
@@ -120,16 +120,16 @@
 
 # Internal nJira function takes an issue Id as an argument and returns its complete comments in a dataframe.
 .jira.issue.comments <- function(id) {
-  .logTrace(paste("jira: Fetching comments of Issue -", id), pr = F)
-  .logTrace(paste("jira: Running comments Query: ", pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), pr = F)
+  .logTrace(paste("jira: Fetching comments of Issue -", id), pr = FALSE)
+  .logTrace(paste("jira: Running comments Query: ", pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), pr = FALSE)
   resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/api/2/issue/", id, "/comment", sep=""), add_headers("Content-Type" = "application/json"))
   df <- .jira.commentsdf(resp)
   return(df)
 }
 
 # Internal nJira issue search query
-.jira.searchqry <- function(query, clean = F) {
-  .logTrace(paste("jira: Running Search Query: ", pkg.globals$.jiraEnv, "/rest/api/2/search?jql=", query, sep = ""), pr = F)
+.jira.searchqry <- function(query, clean = FALSE) {
+  .logTrace(paste("jira: Running Search Query: ", pkg.globals$.jiraEnv, "/rest/api/2/search?jql=", query, sep = ""), pr = FALSE)
   resp <- GET(paste(pkg.globals$.jiraEnv, "/rest/api/2/search?jql=", query, sep = ""), add_headers("Content-Type" = "application/json"))
   
   if (length(content(resp)$errorMessages[[1]]) > 0) {
@@ -139,7 +139,7 @@
   }
   
   if (content(resp)$total == 0 || length(content(resp)$issues) == 0) {
-    .logTrace("jira: No Issues found", pr = F)
+    .logTrace("jira: No Issues found", pr = FALSE)
     return(NULL)
   }
   
@@ -168,22 +168,22 @@
   })
   
   if (is.vector(df)) {df <- t(as.matrix(df))}
-  df <- as.data.frame(df, stringsAsFactors = F)
-  df <- as.data.frame(lapply(df, function(x) as.character(x)), stringsAsFactors = F)
-  if (clean == T) {df <- Filter(function(x)!all(x == "NULL"), df)}
-  colnames(df) <- .jira.fields.map(colnames(df), toAlias = T)
+  df <- as.data.frame(df, stringsAsFactors = FALSE)
+  df <- as.data.frame(lapply(df, function(x) as.character(x)), stringsAsFactors = FALSE)
+  if (clean == TRUE) {df <- Filter(function(x)!all(x == "NULL"), df)}
+  colnames(df) <- .jira.fields.map(colnames(df), toAlias = TRUE)
   df$id <- as.character(dm$key)
   return(df)
 }
 
 # Internal nJira function takes JIRA search queries related to issues (As you pass them on JIRA) and returns the response in a dataframe.
-.jira.search.issue <- function(query, startAt=0, maxresults=NULL, fields = NULL, clean = F) {
+.jira.search.issue <- function(query, startAt=0, maxresults=NULL, fields = NULL, clean = FALSE) {
   
   # Replace space in query with %20
   query <- gsub(" ", "%20", query)
   
   # which fields to fetch in search query
-  if (is.null(fields)) {fields <- paste(.jira.issues.fields(default = T)$id, collapse=",")}
+  if (is.null(fields)) {fields <- paste(.jira.issues.fields(default = TRUE)$id, collapse=",")}
   else if (fields == "ALL") {fields <- "*all,-comment" ; clean <- TRUE}
   else {fields <- paste(.jira.fields.map(unlist(strsplit(fields, ","))), collapse=",")}
   
