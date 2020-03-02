@@ -56,9 +56,4 @@ where = "'cf[10021]' = 'ABCD' AND Created > '2019-01-01'")
 history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, 
 COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", 
 groupby = "id,toString")
-
 ```
-
-
-
-## Code of Conduct
