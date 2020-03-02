@@ -8,7 +8,7 @@ jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
   jira.val = 0, logs = FALSE)
 }
 \arguments{
-\item{jira.env}{Web address of JIRA environment (e.g. https://issues.apache.org/jira)}
+\item{jira.env}{Web address of 'Jira' environment (e.g. https://issues.apache.org/jira)}
 
 \item{jira.user}{Jira User Name}
 
@@ -19,12 +19,13 @@ jira.login(jira.env = NULL, jira.user = NULL, jira.pwd = NULL,
 \item{logs}{debug logs required on not (Default = FALSE)}
 }
 \value{
-The function autheticates into JIRA environment..
+The function authenticates the user into Jira installation and caches the Jira credentials.
 }
 \description{
-This function authenticates the user to fetch data from respective JIRA environment.
+Authenticates the user to fetch data from the respective Jira installation.
 }
 \examples{
 jira.login(jira.env="https://issues.apache.org/jira", 
 jira.user="jiraTestUser", jira.pwd="jiraTestPwd")
+
 }

@@ -11,18 +11,19 @@ jira.query(table, fields = NULL, where = NULL, groupby = NULL)
 
 \item{fields}{Comma separated names of the fields from the specified table whose values will be fetched.}
 
-\item{where}{specifies the where clause of the query. You can also pass your JIRA JQL as-is in the where clause.}
+\item{where}{specifies the where clause of the query. You can also pass your Jira JQL as-is in the where clause.}
 
 \item{groupby}{specifies the list of fields on which the data is grouped.}
 }
 \value{
-The function returns the Jira query result as a dataframe.
+Data frame of results returned by the Jira query.
 }
 \description{
-The function returns the query data from Jira as a dataframe.
+Query Jira using SQL like query syntax.
+The query response from Jira REST API is returned as a dataframe.
 }
 \details{
-For querying the JIRA 'history' table, the where clause must specify the issue 'id' \cr
+For querying Jira 'history' table, the where clause must specify issue 'id' \cr
 Example : \code{where = "id = 'HIVE-22692'"}
 }
 \examples{
@@ -38,4 +39,5 @@ history <- jira.query(table = "history", where = "id = 'HIVE-22692'")
 history <- jira.query(table = "history", fields = "id AS IssueId, toString AS Status, 
 COUNT(fromString) AS Count", where = "id = 'HIVE-22692' AND field = 'status'", 
 groupby = "id,toString")
+
 }

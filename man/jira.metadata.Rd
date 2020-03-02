@@ -12,14 +12,16 @@ jira.metadata(table = NULL, fields = NULL)
 \item{fields}{List of field names whose details are required. If not specified, all the fields of the specified tables are returned.}
 }
 \value{
-The function returns the jira table details.
+Data frame of Jira tables and field names.
 }
 \description{
-The function returns the list of tables, fields, and their descriptions.
+Returns the 'metadata' of Jira which includes 'table' and 'field' names, valid for respective Jira installation.
+These table and field names can be referred while creating a Jira Query.
 }
 \examples{
 fields <- jira.metadata()
 fields <- jira.metadata(table = "history")
 fields <- jira.metadata(table = "issues")
 fields <- jira.metadata(table = "issues", fields = c("Created", "Date Required", "Dev Status"))
+
 }

@@ -68,7 +68,8 @@ jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.
 
 #' Jira Tables and Field Details
 #'
-#' Returns the metadata of a Jira installation which includes table names, field names and their descriptions.
+#' Returns the 'metadata' of Jira which includes 'table' and 'field' names, valid for respective Jira installation.
+#' These table and field names can be referred while creating a Jira Query.
 #'
 #' @param table Name of the Jira tables. If not specified, all the tables of the given interface are returned.
 #' @param fields List of field names whose details are required. If not specified, all the fields of the specified tables are returned.
@@ -78,7 +79,7 @@ jira.login <- function(jira.env = NULL, jira.user = NULL, jira.pwd = NULL, jira.
 #' fields <- jira.metadata(table = "issues")
 #' fields <- jira.metadata(table = "issues", fields = c("Created", "Date Required", "Dev Status"))
 #' 
-#' @return Data frame of Jira table names, field names and their descriptions.
+#' @return Data frame of Jira tables and field names.
 
 jira.metadata <- function(table = NULL, fields = NULL) {
   jira.login(pkg.globals$.jiraEnv, pkg.globals$.jiraUser, pkg.globals$.jiraPwd, pkg.globals$.jiraVal)
@@ -87,9 +88,10 @@ jira.metadata <- function(table = NULL, fields = NULL) {
 
 #' Jira Query Interface
 #'
-#' Query Jira using SQL like query syntax. The query response from Jira REST API is returned as a dataframe.
+#' Query Jira using SQL like query syntax. 
+#' The query response from Jira REST API is returned as a dataframe.
 #' 
-#' For querying the Jira 'history' table, the where clause must specify the issue 'id' \cr
+#' For querying Jira 'history' table, the where clause must specify issue 'id' \cr
 #' Example : \code{where = "id = 'HIVE-22692'"}
 #'
 #' @param table Name of Jira table from which data will be fetched.

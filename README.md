@@ -1,3 +1,5 @@
+https://www.r-pkg.org/badges/version/nJira
+
 # nJira
 
 SQL like query interface for [Jira](https://www.atlassian.com/software/jira) in R language
