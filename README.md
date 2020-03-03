@@ -2,6 +2,7 @@
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/nJira?color=brightgreen)](https://cran.r-project.org/package=nJira)
 [![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/nJira?color=brightgreen)](http://cranlogs.r-pkg.org/badges/grand-total/nJira)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 SQL like query interface for [Jira](https://www.atlassian.com/software/jira) in R language
 
