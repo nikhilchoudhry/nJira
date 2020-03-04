@@ -17,8 +17,6 @@ Key features:
   
 ## Installation
 
-To get the current development version from github:
-
 CRAN version:
 ```r
 install.packages("nJira")
